@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Roleta de Sorteio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f2f2f2;
+      padding-top: 50px;
+    }
+
+    .wheel-container {
+      position: relative;
+      margin: 0 auto;
+      width: 400px;
+      height: 400px;
+    }
+
+    canvas {
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .pointer {
+      position: absolute;
+      top: 190px;       /* Centralizado verticalmente */
+      left: 370px;      /* À direita da roleta */
+      width: 20px;
+      height: 20px;
+      background: red;
+      clip-path: polygon(0% 50%, 100% 0%, 100% 100%); /* Triângulo apontando para a esquerda */
+      z-index: 10;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 24px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎰 Roleta de Sorteio</h1>
+
+<div class="wheel-container">
+  <canvas id="roleta" width="400" height="400"></canvas>
+  <div class="pointer"></div>
+</div>
+
+<button onclick="girar()">Girar Roleta</button>
+<div id="result"></div>
+
+<script>
+  const canvas = document.getElementById("roleta");
+  const ctx = canvas.getContext("2d");
+
+  // Defina as opções e suas probabilidades (quanto maior o peso, mais provável)
+  const itens = [
+    { nome: "Prêmio 1", peso: 1 },   // Menos provável
+    { nome: "Prêmio 2", peso: 3 },
+    { nome: "Prêmio 3", peso: 1 },   // Menos provável
+    { nome: "Prêmio 4", peso: 5 },
+    { nome: "Prêmio 5", peso: 2 },
+    { nome: "Prêmio 6", peso: 1 },   // Menos provável
+    { nome: "Prêmio 7", peso: 5 },
+    { nome: "Prêmio 8", peso: 3 },
+    { nome: "Prêmio 9", peso: 1 },   // Menos provável
+    { nome: "Prêmio 10", peso: 5 },
+  ];
+
+  const totalPesos = itens.reduce((acc, item) => acc + item.peso, 0);
+
+  let angle = 0;
+  let rotation = 0;
+  let isSpinning = false;
+
+  function sortearPeso() {
+    const rand = Math.random() * totalPesos;
+    let acumulado = 0;
+    for (let i = 0; i < itens.length; i++) {
+      acumulado += itens[i].peso;
+      if (rand <= acumulado) return i;
+    }
+  }
+
+  function drawWheel() {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 180;
+    const slices = itens.length;
+    const sliceAngle = (2 * Math.PI) / slices;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < slices; i++) {
+      const startAngle = i * sliceAngle + angle;
+      const endAngle = startAngle + sliceAngle;
+
+      // Cor
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.fillStyle = `hsl(${i * (360 / slices)}, 70%, 60%)`;
+      ctx.fill();
+
+      // Texto
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(startAngle + sliceAngle / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText(itens[i].nome, radius - 10, 5);
+      ctx.restore();
+    }
+  }
+
+  function girar() {
+    if (isSpinning) return;
+
+    const indiceSorteado = sortearPeso();
+    const slices = itens.length;
+    const sliceAngle = (2 * Math.PI) / slices;
+
+    const finalAngle = -(indiceSorteado * sliceAngle + sliceAngle / 2); // centraliza
+
+    const spinStrength = Math.floor(Math.random() * 5) + 10; // voltas aleatórias
+    const duration = 5000; // ms
+    const start = performance.now();
+
+    isSpinning = true;
+    rotation = 0;
+
+    function animate(now) {
+      const elapsed = now - start;
+      const t = Math.min(elapsed / duration, 1);
+      const easeOutCubic = t => 1 - (--t) * t * t;
+
+      rotation = (spinStrength * Math.PI * 2) * easeOutCubic(t);
+      angle = rotation + finalAngle;
+
+      drawWheel();
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        isSpinning = false;
+        document.getElementById("result").innerText = `🎉 Você ganhou: ${itens[indiceSorteado].nome}`;
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  drawWheel();
+</script>
+
+</body>
+</html>
