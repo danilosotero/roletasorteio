@@ -293,7 +293,7 @@
       </div>
     </div>
 
-    <!-- A roleta sempre visível -->
+    <!-- Parte da roleta - sempre visível -->
     <div class="wheel-section">
       <div class="wheel-container">
         <canvas id="roleta" width="400" height="400"></canvas>
@@ -465,19 +465,27 @@
 
     function girar() {
       if (isSpinning || prizes.length === 0) return;
+
+      // Reinicia a roleta do zero
+      angle = 0;
+      drawWheel();
+
       const winnerIndex = selectWinner();
       const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+
       let targetAngle = 0;
       for (let i = 0; i < winnerIndex; i++) {
         targetAngle += (prizes[i].weight / totalWeight) * 2 * Math.PI;
       }
       targetAngle += (prizes[winnerIndex].weight / totalWeight) * Math.PI;
       targetAngle = -targetAngle;
+
       const spinRevolutions = 7 + Math.random() * 3;
       const finalAngle = targetAngle + spinRevolutions * 2 * Math.PI;
+
       const duration = 4000;
       const start = performance.now();
-      const startAngle = angle;
+      const startAngle = 0;
       isSpinning = true;
       document.getElementById('spin-button').disabled = true;
       document.getElementById('result').classList.remove('show');
@@ -489,6 +497,7 @@
         const easedProgress = easeOut(progress);
         angle = startAngle + (finalAngle - startAngle) * easedProgress;
         drawWheel();
+
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
@@ -499,6 +508,7 @@
           resultDiv.classList.add('show');
         }
       }
+
       requestAnimationFrame(animate);
     }
 
