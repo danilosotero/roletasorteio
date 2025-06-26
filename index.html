@@ -1,169 +1,510 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Roleta de Sorteio</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roleta de Sorteio Premium</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f2f2f2;
-      padding-top: 50px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      max-width: 1200px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .main-content {
+      display: block;
+      transition: all 0.5s ease;
+      position: relative;
+      z-index: 2;
+    }
+    .main-content.hidden {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      top: -100%;
+      width: 100%;
+    }
+    .config-panel {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 15px;
+      border: 1px solid #e9ecef;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .config-panel.hidden {
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      left: -100%;
+    }
+    .config-title {
+      font-size: 1.3rem;
+      color: #495057;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    .prize-item {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #dee2e6;
+      transition: all 0.3s ease;
+    }
+    .prize-item:hover {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    .prize-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .prize-number {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+    .remove-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.3s;
+    }
+    .remove-btn:hover {
+      background: #c82333;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #495057;
+      font-weight: 500;
+    }
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .percentage {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: 5px;
+      font-weight: 500;
+    }
+    .add-prize-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: transform 0.2s;
+    }
+    .add-prize-btn:hover {
+      transform: translateY(-2px);
+    }
+    .wheel-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+    }
     .wheel-container {
       position: relative;
-      margin: 0 auto;
       width: 400px;
       height: 400px;
+      margin-bottom: 30px;
     }
-
     canvas {
       border-radius: 50%;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
     }
-
+    canvas:hover {
+      transform: scale(1.02);
+    }
     .pointer {
       position: absolute;
-      top: 190px;       /* Centralizado verticalmente */
-      left: 370px;      /* À direita da roleta */
-      width: 20px;
-      height: 20px;
-      background: red;
-      clip-path: polygon(0% 50%, 100% 0%, 100% 100%); /* Triângulo apontando para a esquerda */
+      top: 50%;
+      right: -10px;
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
+      transform: translateY(-50%);
       z-index: 10;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
-
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
+    .spin-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      border-radius: 50px;
       cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
     }
-
-    #result {
+    .spin-btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    }
+    .spin-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .result {
       margin-top: 20px;
-      font-size: 24px;
-      color: green;
+      padding: 20px;
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border-radius: 15px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      text-align: center;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+    }
+    .result.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toggle-settings-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 15px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .toggle-settings-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .stats {
+      background: #e9ecef;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .stats h4 {
+      color: #495057;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 768px) {
+      .config-panel {
+        max-width: 100%;
+      }
+      .wheel-container {
+        width: 300px;
+        height: 300px;
+      }
+      canvas {
+        width: 300px;
+        height: 300px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <button class="toggle-settings-btn" onclick="toggleSettings()" id="toggle-btn">⚙️ Configurações</button>
+    <h1>🎰 Roleta de Sorteio Premium</h1>
 
-<h1>🎰 Roleta de Sorteio</h1>
+    <!-- Painel de configurações -->
+    <div class="main-content" id="main-content">
+      <div class="config-panel" id="config-panel">
+        <h3 class="config-title">⚙️ Configuração dos Prêmios</h3>
+        <div id="prizes-container"></div>
+        <button class="add-prize-btn" onclick="addPrize()">➕ Adicionar Prêmio</button>
+        <div class="stats">
+          <h4>📊 Estatísticas</h4>
+          <div id="total-prizes">Total de prêmios: 2</div>
+          <div id="total-weight">Peso total: 10</div>
+        </div>
+      </div>
+    </div>
 
-<div class="wheel-container">
-  <canvas id="roleta" width="400" height="400"></canvas>
-  <div class="pointer"></div>
-</div>
+    <!-- A roleta sempre visível -->
+    <div class="wheel-section">
+      <div class="wheel-container">
+        <canvas id="roleta" width="400" height="400"></canvas>
+        <div class="pointer"></div>
+      </div>
+      <button class="spin-btn" onclick="girar()" id="spin-button">🎯 Girar Roleta</button>
+      <div class="result" id="result"></div>
+    </div>
+  </div>
 
-<button onclick="girar()">Girar Roleta</button>
-<div id="result"></div>
+  <script>
+    const canvas = document.getElementById("roleta");
+    const ctx = canvas.getContext("2d");
+    let prizes = [
+      { name: "Prêmio 1", weight: 5 },
+      { name: "Prêmio 2", weight: 5 }
+    ];
+    let angle = 0;
+    let isSpinning = false;
+    let settingsVisible = true;
 
-<script>
-  const canvas = document.getElementById("roleta");
-  const ctx = canvas.getContext("2d");
-
-  // Defina as opções e suas probabilidades (quanto maior o peso, mais provável)
-  const itens = [
-    { nome: "Prêmio 1", peso: 1 },   // Menos provável
-    { nome: "Prêmio 2", peso: 3 },
-    { nome: "Prêmio 3", peso: 1 },   // Menos provável
-    { nome: "Prêmio 4", peso: 5 },
-    { nome: "Prêmio 5", peso: 2 },
-    { nome: "Prêmio 6", peso: 1 },   // Menos provável
-    { nome: "Prêmio 7", peso: 5 },
-    { nome: "Prêmio 8", peso: 3 },
-    { nome: "Prêmio 9", peso: 1 },   // Menos provável
-    { nome: "Prêmio 10", peso: 5 },
-  ];
-
-  const totalPesos = itens.reduce((acc, item) => acc + item.peso, 0);
-
-  let angle = 0;
-  let rotation = 0;
-  let isSpinning = false;
-
-  function sortearPeso() {
-    const rand = Math.random() * totalPesos;
-    let acumulado = 0;
-    for (let i = 0; i < itens.length; i++) {
-      acumulado += itens[i].peso;
-      if (rand <= acumulado) return i;
-    }
-  }
-
-  function drawWheel() {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 180;
-    const slices = itens.length;
-    const sliceAngle = (2 * Math.PI) / slices;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < slices; i++) {
-      const startAngle = i * sliceAngle + angle;
-      const endAngle = startAngle + sliceAngle;
-
-      // Cor
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-      ctx.fillStyle = `hsl(${i * (360 / slices)}, 70%, 60%)`;
-      ctx.fill();
-
-      // Texto
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(startAngle + sliceAngle / 2);
-      ctx.textAlign = "right";
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 16px sans-serif";
-      ctx.fillText(itens[i].nome, radius - 10, 5);
-      ctx.restore();
-    }
-  }
-
-  function girar() {
-    if (isSpinning) return;
-
-    const indiceSorteado = sortearPeso();
-    const slices = itens.length;
-    const sliceAngle = (2 * Math.PI) / slices;
-
-    const finalAngle = -(indiceSorteado * sliceAngle + sliceAngle / 2); // centraliza
-
-    const spinStrength = Math.floor(Math.random() * 5) + 10; // voltas aleatórias
-    const duration = 5000; // ms
-    const start = performance.now();
-
-    isSpinning = true;
-    rotation = 0;
-
-    function animate(now) {
-      const elapsed = now - start;
-      const t = Math.min(elapsed / duration, 1);
-      const easeOutCubic = t => 1 - (--t) * t * t;
-
-      rotation = (spinStrength * Math.PI * 2) * easeOutCubic(t);
-      angle = rotation + finalAngle;
-
-      drawWheel();
-
-      if (t < 1) {
-        requestAnimationFrame(animate);
+    function toggleSettings() {
+      const mainContent = document.getElementById('main-content');
+      const toggleBtn = document.getElementById('toggle-btn');
+      settingsVisible = !settingsVisible;
+      if (settingsVisible) {
+        mainContent.classList.remove('hidden');
+        toggleBtn.innerHTML = '❌ Ocultar Configurações';
       } else {
-        isSpinning = false;
-        document.getElementById("result").innerText = `🎉 Você ganhou: ${itens[indiceSorteado].nome}`;
+        mainContent.classList.add('hidden');
+        toggleBtn.innerHTML = '⚙️ Mostrar Configurações';
       }
     }
 
-    requestAnimationFrame(animate);
-  }
+    function updateStats() {
+      const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+      document.getElementById('total-prizes').textContent = `Total de prêmios: ${prizes.length}`;
+      document.getElementById('total-weight').textContent = `Peso total: ${totalWeight}`;
+    }
 
-  drawWheel();
-</script>
+    function calculatePercentages() {
+      const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+      return prizes.map(prize => ({
+        ...prize,
+        percentage: totalWeight > 0 ? ((prize.weight / totalWeight) * 100).toFixed(1) : 0
+      }));
+    }
 
+    function renderPrizes() {
+      const container = document.getElementById('prizes-container');
+      const prizesWithPercentages = calculatePercentages();
+      container.innerHTML = '';
+      prizesWithPercentages.forEach((prize, index) => {
+        const prizeDiv = document.createElement('div');
+        prizeDiv.className = 'prize-item';
+        prizeDiv.innerHTML = `
+          <div class="prize-header">
+            <span class="prize-number">Prêmio ${index + 1}</span>
+            ${prizes.length > 2 ? `<button class="remove-btn" onclick="removePrize(${index})">🗑️ Remover</button>` : ''}
+          </div>
+          <div class="form-group">
+            <label>Nome do Prêmio:</label>
+            <input type="text" value="${prize.name}" onchange="updatePrizeName(${index}, this.value)" placeholder="Digite o nome do prêmio">
+          </div>
+          <div class="form-group">
+            <label>Peso (influencia a probabilidade):</label>
+            <select onchange="updatePrizeWeight(${index}, parseInt(this.value))">
+              <option value="1" ${prize.weight === 1 ? 'selected' : ''}>1 - Muito Baixo</option>
+              <option value="2" ${prize.weight === 2 ? 'selected' : ''}>2 - Baixo</option>
+              <option value="3" ${prize.weight === 3 ? 'selected' : ''}>3 - Médio-Baixo</option>
+              <option value="5" ${prize.weight === 5 ? 'selected' : ''}>5 - Médio</option>
+              <option value="7" ${prize.weight === 7 ? 'selected' : ''}>7 - Médio-Alto</option>
+              <option value="10" ${prize.weight === 10 ? 'selected' : ''}>10 - Alto</option>
+              <option value="15" ${prize.weight === 15 ? 'selected' : ''}>15 - Muito Alto</option>
+            </select>
+            <div class="percentage">Chance: ${prize.percentage}%</div>
+          </div>
+        `;
+        container.appendChild(prizeDiv);
+      });
+      updateStats();
+      drawWheel();
+    }
+
+    function addPrize() {
+      const newPrizeNumber = prizes.length + 1;
+      prizes.push({ name: `Prêmio ${newPrizeNumber}`, weight: 5 });
+      renderPrizes();
+    }
+
+    function removePrize(index) {
+      if (prizes.length > 2) {
+        prizes.splice(index, 1);
+        renderPrizes();
+      }
+    }
+
+    function updatePrizeName(index, name) {
+      prizes[index].name = name;
+      drawWheel();
+    }
+
+    function updatePrizeWeight(index, weight) {
+      prizes[index].weight = weight;
+      renderPrizes();
+    }
+
+    function drawWheel() {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = 180;
+      const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let currentAngle = angle;
+      prizes.forEach((prize, index) => {
+        const sliceAngle = (prize.weight / totalWeight) * 2 * Math.PI;
+        const endAngle = currentAngle + sliceAngle;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, currentAngle, endAngle);
+        const hue = (index * 137.5) % 360;
+        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+        gradient.addColorStop(0, `hsl(${hue}, 70%, 75%)`);
+        gradient.addColorStop(1, `hsl(${hue}, 70%, 45%)`);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(currentAngle + sliceAngle / 2);
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 14px sans-serif";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 2;
+        ctx.fillText(prize.name, radius * 0.7, -5);
+        ctx.font = "12px sans-serif";
+        const percentage = ((prize.weight / totalWeight) * 100).toFixed(1);
+        ctx.fillText(`${percentage}%`, radius * 0.7, 10);
+        ctx.restore();
+        currentAngle = endAngle;
+      });
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+      const centerGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 30);
+      centerGradient.addColorStop(0, '#fff');
+      centerGradient.addColorStop(1, '#ddd');
+      ctx.fillStyle = centerGradient;
+      ctx.fill();
+      ctx.strokeStyle = '#999';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    function selectWinner() {
+      const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+      const random = Math.random() * totalWeight;
+      let cumulative = 0;
+      for (let i = 0; i < prizes.length; i++) {
+        cumulative += prizes[i].weight;
+        if (random <= cumulative) {
+          return i;
+        }
+      }
+      return 0;
+    }
+
+    function girar() {
+      if (isSpinning || prizes.length === 0) return;
+      const winnerIndex = selectWinner();
+      const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+      let targetAngle = 0;
+      for (let i = 0; i < winnerIndex; i++) {
+        targetAngle += (prizes[i].weight / totalWeight) * 2 * Math.PI;
+      }
+      targetAngle += (prizes[winnerIndex].weight / totalWeight) * Math.PI;
+      targetAngle = -targetAngle;
+      const spinRevolutions = 7 + Math.random() * 3;
+      const finalAngle = targetAngle + spinRevolutions * 2 * Math.PI;
+      const duration = 4000;
+      const start = performance.now();
+      const startAngle = angle;
+      isSpinning = true;
+      document.getElementById('spin-button').disabled = true;
+      document.getElementById('result').classList.remove('show');
+
+      function animate(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = t => 1 - Math.pow(1 - t, 3);
+        const easedProgress = easeOut(progress);
+        angle = startAngle + (finalAngle - startAngle) * easedProgress;
+        drawWheel();
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          isSpinning = false;
+          document.getElementById('spin-button').disabled = false;
+          const resultDiv = document.getElementById('result');
+          resultDiv.innerHTML = `🎉 Parabéns! Você ganhou: <strong>${prizes[winnerIndex].name}</strong>`;
+          resultDiv.classList.add('show');
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    // Inicialização
+    renderPrizes();
+    drawWheel();
+  </script>
 </body>
 </html>
